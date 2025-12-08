@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Wpf_Task3.Models;
+﻿namespace Wpf_Task3.Models;
 
 public class Record
 {

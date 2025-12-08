@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Wpf_Task3.Models; // чтобы видеть Record
+using Wpf_Task3.Models;
 
 namespace Wpf_Task3;
 

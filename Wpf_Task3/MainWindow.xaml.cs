@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.IO;
 using System.Windows;
 using Wpf_Task3.Models;
@@ -63,6 +62,14 @@ namespace Wpf_Task3
         {
             using var db = new AppDbContext();
             var query = db.Records.AsQueryable();
+
+            // ✅ Date logic validation
+            if (DateFrom.SelectedDate != null && DateTo.SelectedDate != null &&
+                DateFrom.SelectedDate > DateTo.SelectedDate)
+            {
+                MessageBox.Show("Start date cannot be later than end date.");
+                return new List<Record>();
+            }
 
             // Date range filter
             if (DateFrom.SelectedDate != null)
@@ -131,6 +138,13 @@ namespace Wpf_Task3
                 return;
             }
 
+            // ✅ Extension validation
+            if (Path.GetExtension(path).ToLower() != ".csv")
+            {
+                MessageBox.Show("Only CSV files are allowed.");
+                return;
+            }
+
             int batchSize = 5000; // Batch insert size
             int total = 0; // Total imported rows
 
@@ -148,9 +162,13 @@ namespace Wpf_Task3
                         if (parts.Length != 6)
                             continue; // Skip invalid rows
 
+                        // ✅ Date format validation
+                        if (!DateTime.TryParse(parts[0], out var date))
+                            continue;
+
                         var rec = new Record
                         {
-                            RecordDate = DateTime.Parse(parts[0]),
+                            RecordDate = date,
                             FirstName = parts[1],
                             LastName = parts[2],
                             SurName = parts[3],
@@ -298,6 +316,5 @@ namespace Wpf_Task3
                 Application.Current.Shutdown(); // Close the application
             }
         }
-
     }
 }
