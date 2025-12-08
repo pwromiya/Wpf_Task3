@@ -1,0 +1,102 @@
+﻿<Window x:Class="Wpf_Task3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Wpf_Task3"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="900">
+
+    <Grid>
+        <!-- Columns: 3/4 for DataGrid, 1/4 for Filter Panel -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- The download button is at the top, the rest is for the DataGrid -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top bar with CSV download button -->
+        <Grid Margin="10" Grid.Column="0" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+            Content="Clear database"
+            Width="120"
+            Height="35"
+            Margin="0,0,10,0"
+            Click="BtnClearDb_Click"/>
+
+            <Button Grid.Column="1"
+            Content="Upload CSV-file"
+            Width="140"
+            Height="35"
+            Click="BtnLoadCsv_Click"/>
+
+            <Button Grid.Column="3"
+            Content="Exit"
+            Width="100"
+            Height="35"
+            HorizontalAlignment="Right"
+            Click="BtnExit_Click"/>
+        </Grid>
+
+
+
+        <!-- DataGrid occupies the left side -->
+        <DataGrid x:Name="RecordsGrid" Grid.Column="0" Grid.Row="1" Margin="10"
+                  AutoGenerateColumns="True"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  SelectionMode="Single"
+                  />
+
+        <!-- Right panel for filters and export -->
+        <StackPanel Grid.Column="1" Grid.Row="1" Margin="10">
+            <TextBlock Text="Filter" FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Date from"/>
+            <DatePicker x:Name="DateFrom"
+            Language="en-US"
+            SelectedDateFormat="Short"
+            Margin="0,0,0,10"/>
+
+            <TextBlock Text="Date to"/>
+            <DatePicker x:Name="DateTo"
+            Language="en-US"
+            SelectedDateFormat="Short"
+            Margin="0,0,0,10"/>
+
+            <TextBlock Text="Firstname"/>
+            <TextBox x:Name="TxtFirstName" Margin="0,0,0,5"/>
+            
+            <TextBlock Text="Lastname"/>
+            <TextBox x:Name="TxtLastName" Margin="0,0,0,5"/>
+
+            <TextBlock Text="Surname"/>
+            <TextBox x:Name="TxtSurName" Margin="0,0,0,5"/>
+
+            <TextBlock Text="City"/>
+            <TextBox x:Name="TxtCity" Margin="0,0,0,5"/>
+
+            <TextBlock Text="Country"/>
+            <TextBox x:Name="TxtCountry" Margin="0,0,0,5"/>
+
+            <Button Content="Choose" Click="BtnSelect_Click" Margin="0,0,0,5"/>
+            <Button Content="Show all" Click="BtnShowAll_Click" Margin="0,0,0,10"/>
+            <Button Content="Export to Excel" Click="BtnExportExcel_Click" Margin="0,0,0,5"/>
+            <Button Content="Export to XML" Click="BtnExportXml_Click" Margin="0,0,0,5"/>
+            
+        </StackPanel>
+
+    </Grid>
+</Window>
