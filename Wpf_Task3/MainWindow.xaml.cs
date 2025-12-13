@@ -63,7 +63,7 @@ namespace Wpf_Task3
             using var db = new AppDbContext();
             var query = db.Records.AsQueryable();
 
-            // ✅ Date logic validation
+            // Date logic validation
             if (DateFrom.SelectedDate != null && DateTo.SelectedDate != null &&
                 DateFrom.SelectedDate > DateTo.SelectedDate)
             {
@@ -138,7 +138,7 @@ namespace Wpf_Task3
                 return;
             }
 
-            // ✅ Extension validation
+            // Extension validation
             if (Path.GetExtension(path).ToLower() != ".csv")
             {
                 MessageBox.Show("Only CSV files are allowed.");
@@ -162,7 +162,7 @@ namespace Wpf_Task3
                         if (parts.Length != 6)
                             continue; // Skip invalid rows
 
-                        // ✅ Date format validation
+                        // Date format validation
                         if (!DateTime.TryParse(parts[0], out var date))
                             continue;
 
@@ -226,7 +226,11 @@ namespace Wpf_Task3
             try
             {
                 using var workbook = new ClosedXML.Excel.XLWorkbook();
-                var sheet = workbook.Worksheets.Add("Records");
+                int sheetIndex = 1;
+                int maxRowsPerSheet = 1048575; // 1 row for header
+                int currentRow = 2;
+
+                var sheet = workbook.Worksheets.Add("Records" + sheetIndex);
 
                 // Header row
                 sheet.Cell(1, 1).Value = "ID";
@@ -237,21 +241,41 @@ namespace Wpf_Task3
                 sheet.Cell(1, 6).Value = "City";
                 sheet.Cell(1, 7).Value = "Country";
 
-                // Data rows
-                int row = 2;
                 foreach (var r in data)
                 {
-                    sheet.Cell(row, 1).Value = r.Id;
-                    sheet.Cell(row, 2).Value = r.RecordDate;
-                    sheet.Cell(row, 3).Value = r.FirstName;
-                    sheet.Cell(row, 4).Value = r.LastName;
-                    sheet.Cell(row, 5).Value = r.SurName;
-                    sheet.Cell(row, 6).Value = r.City;
-                    sheet.Cell(row, 7).Value = r.Country;
-                    row++;
+                    // Check if current sheet is full
+                    if (currentRow > maxRowsPerSheet)
+                    {
+                        sheetIndex++;
+                        sheet = workbook.Worksheets.Add("Records" + sheetIndex);
+                        currentRow = 2;
+
+                        // Header row for new sheet
+                        sheet.Cell(1, 1).Value = "ID";
+                        sheet.Cell(1, 2).Value = "Date";
+                        sheet.Cell(1, 3).Value = "Firstname";
+                        sheet.Cell(1, 4).Value = "Lastname";
+                        sheet.Cell(1, 5).Value = "Surname";
+                        sheet.Cell(1, 6).Value = "City";
+                        sheet.Cell(1, 7).Value = "Country";
+                    }
+
+                    // Fill data
+                    sheet.Cell(currentRow, 1).Value = r.Id;
+                    sheet.Cell(currentRow, 2).Value = r.RecordDate;
+                    sheet.Cell(currentRow, 3).Value = r.FirstName;
+                    sheet.Cell(currentRow, 4).Value = r.LastName;
+                    sheet.Cell(currentRow, 5).Value = r.SurName;
+                    sheet.Cell(currentRow, 6).Value = r.City;
+                    sheet.Cell(currentRow, 7).Value = r.Country;
+
+                    currentRow++;
                 }
 
-                sheet.Columns().AdjustToContents(); // Auto width
+                // Auto adjust columns
+                foreach (var ws in workbook.Worksheets)
+                    ws.Columns().AdjustToContents();
+
                 workbook.SaveAs(dialog.FileName);
 
                 MessageBox.Show("Excel export completed successfully.");
@@ -261,6 +285,7 @@ namespace Wpf_Task3
                 MessageBox.Show("Export error:\n" + ex.Message);
             }
         }
+
 
         // Export current grid to XML
         private void BtnExportXml_Click(object sender, RoutedEventArgs e)
