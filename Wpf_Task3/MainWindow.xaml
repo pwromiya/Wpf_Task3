@@ -4,112 +4,257 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Wpf_Task3"
+        xmlns:vm="clr-namespace:Wpf_Task3.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="900">
+        Title="Database Manager" Height="700" Width="1100"
+        MinHeight="600" MinWidth="900">
 
     <Grid>
-        <!-- Columns: 3/4 for DataGrid, 1/4 for Filter Panel -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <!-- The download button is at the top, the rest is for the DataGrid -->
+        <!-- Main layout: Header, Content, Sidebar -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Header -->
             <RowDefinition Height="*"/>
+            <!-- Content -->
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <!-- Main content -->
+            <ColumnDefinition Width="*"/>
+            <!-- Side panel -->
+        </Grid.ColumnDefinitions>
 
-        <!-- Top bar with CSV download button -->
-        <Grid Margin="10,10,10,10" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="120"/>
-            </Grid.ColumnDefinitions>
+        <!-- ===== HEADER SECTION ===== -->
+        <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
+                Background="#FFECE9D8"
+                Padding="10" BorderThickness="0,0,0,1"
+                BorderBrush="#FFA0A0A0">
+            <DockPanel LastChildFill="False">
+                <!-- Left: App title -->
+                <TextBlock DockPanel.Dock="Left" 
+                         Text="Task 3" 
+                         FontSize="16" FontWeight="Bold"
+                         VerticalAlignment="Center" Margin="0,0,20,0"/>
 
-            <ProgressBar x:Name="ImportProgress"
-             Height="20"
-             Minimum="0"
-             Maximum="100"
-             Margin="242,10,0,10" Grid.Column="2"/>
+                <!-- Center: Progress indicators -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                          VerticalAlignment="Center" Margin="0,0,20,0">
+                    <ProgressBar Value="{Binding ImportProgress}"
+                               Width="200" Height="15"
+                               Minimum="0" Maximum="100"
+                               Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding ProgressText}"
+                             FontWeight="SemiBold"
+                             VerticalAlignment="Center"
+                             MinWidth="150"/>
+                </StackPanel>
 
-            <TextBlock x:Name="ProgressText"
-           Margin="26,10,242,10"
-           Text="Waiting for import..."
-           FontWeight="Bold" Grid.Column="2"/>
+                <!-- Right: Database actions -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" 
+                          HorizontalAlignment="Right">
+                    <Button Content="Clear Database" 
+                          Command="{Binding ClearDbCommand}"
+                          Width="120" Height="30"
+                          ToolTip="Remove all records from database"
+                          Margin="0,0,10,0"/>
 
+                    <Button Content="Upload CSV" 
+                          Command="{Binding LoadCsvCommand}"
+                          Width="120" Height="30"
+                          ToolTip="Import records from CSV file"
+                          Margin="0,0,10,0"/>
 
-            <Button Grid.Column="0"
-            Content="Clear database"
-            Width="120"
-            Height="35"
-            Margin="0,3,16,2"
-            Click="BtnClearDb_Click"/>
+                    <Rectangle Width="20" Visibility="Hidden"/>
+                    <!-- Spacer -->
 
-            <Button Grid.Column="1"
-            Content="Upload CSV-file"
-            Width="140"
-            Height="35"
-            Click="BtnLoadCsv_Click"/>
+                    <Button Content="Exit" 
+                          Command="{Binding ExitCommand}"
+                          Width="80" Height="30"
+                          ToolTip="Close application"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
 
-            <Button Grid.Column="3"
-            Content="Exit"
-            Width="100"
-            Height="35"
-            HorizontalAlignment="Right"
-            Click="BtnExit_Click"/>
-        </Grid>
+        <!-- ===== MAIN CONTENT SECTION ===== -->
+        <!-- DataGrid with records -->
+        <Border Grid.Column="0" Grid.Row="1" 
+                Margin="10,10,5,10" 
+                BorderThickness="1"
+                BorderBrush="#FFA0A0A0"
+                CornerRadius="3">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
+                <!-- DataGrid header -->
+                <Border Grid.Row="0" Padding="10,5"
+                        Background="#FFECE9D8">
+                    <TextBlock Text="Records" 
+                             FontWeight="Bold"
+                             VerticalAlignment="Center"/>
+                </Border>
 
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1"
+                        ItemsSource="{Binding Records}"
+                        AutoGenerateColumns="False"
+                        IsReadOnly="True"
+                        CanUserAddRows="False"
+                        SelectionMode="Single"
+                        HeadersVisibility="Column"
+                        RowBackground="White"
+                        AlternatingRowBackground="#FFF5F5F5"
+                        BorderThickness="0"
+                        GridLinesVisibility="Horizontal">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding RecordDate, StringFormat='dd/MM/yyyy HH:mm'}" Width="120"/>
+                        <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="100"/>
+                        <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" Width="100"/>
+                        <DataGridTextColumn Header="Surname" Binding="{Binding SurName}" Width="100"/>
+                        <DataGridTextColumn Header="City" Binding="{Binding City}" Width="100"/>
+                        <DataGridTextColumn Header="Country" Binding="{Binding Country}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
 
-        <!-- DataGrid occupies the left side -->
-        <DataGrid x:Name="RecordsGrid" Grid.Column="0" Grid.Row="1" Margin="10"
-                  AutoGenerateColumns="True"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  />
+        <!-- ===== SIDE PANEL SECTION ===== -->
+        <Border Grid.Column="1" Grid.Row="1"
+                Margin="5,10,10,10"
+                BorderThickness="1"
+                BorderBrush="#FFA0A0A0"
+                CornerRadius="3"
+                Background="#FFF9F9F9">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Filters header -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Date filters -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Text filters -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Action buttons -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Export section -->
+                    <RowDefinition Height="*"/>
+                    <!-- Spacer -->
+                </Grid.RowDefinitions>
 
-        <!-- Right panel for filters and export -->
-        <StackPanel Grid.Column="1" Grid.Row="1" Margin="10">
-            <TextBlock Text="Filter" FontWeight="Bold" Margin="0,0,0,10"/>
+                <!-- Filters Header -->
+                <Border Grid.Row="0" Padding="10,8"
+                        Background="#FFECE9D8"
+                        CornerRadius="3,3,0,0">
+                    <TextBlock Text="Filters &amp; Actions" 
+                             FontWeight="Bold"
+                             HorizontalAlignment="Center"/>
+                </Border>
 
-            <TextBlock Text="Date from"/>
-            <DatePicker x:Name="DateFrom"
-            Language="en-US"
-            SelectedDateFormat="Short"
-            Margin="0,0,0,10"/>
+                <!-- Date Filters -->
+                <GroupBox Grid.Row="1" Header="Date Range" Margin="10,10,10,5" Padding="5">
+                    <StackPanel>
+                        <TextBlock Text="From:" Margin="0,0,0,2" FontSize="12"/>
+                        <DatePicker SelectedDate="{Binding DateFrom}"
+                                  SelectedDateFormat="Short"
+                                  Margin="0,0,0,8"/>
 
-            <TextBlock Text="Date to"/>
-            <DatePicker x:Name="DateTo"
-            Language="en-US"
-            SelectedDateFormat="Short"
-            Margin="0,0,0,10"/>
+                        <TextBlock Text="To:" Margin="0,0,0,2" FontSize="12"/>
+                        <DatePicker SelectedDate="{Binding DateTo}"
+                                  SelectedDateFormat="Short"/>
+                    </StackPanel>
+                </GroupBox>
 
-            <TextBlock Text="Firstname"/>
-            <TextBox x:Name="TxtFirstName" Margin="0,0,0,5"/>
+                <!-- Text Filters -->
+                <GroupBox Grid.Row="2" Header="Text Filters" Margin="10,5,10,5" Padding="5">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Lastname"/>
-            <TextBox x:Name="TxtLastName" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="First:" 
+                                     VerticalAlignment="Center" Margin="0,0,5,5"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" 
+                                   Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"
+                                   Margin="0,0,0,5"/>
 
-            <TextBlock Text="Surname"/>
-            <TextBox x:Name="TxtSurName" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Last:" 
+                                     VerticalAlignment="Center" Margin="0,0,5,5"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" 
+                                   Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"
+                                   Margin="0,0,0,5"/>
 
-            <TextBlock Text="City"/>
-            <TextBox x:Name="TxtCity" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Surname:" 
+                                     VerticalAlignment="Center" Margin="0,0,5,5"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" 
+                                   Text="{Binding SurName, UpdateSourceTrigger=PropertyChanged}"
+                                   Margin="0,0,0,5"/>
 
-            <TextBlock Text="Country"/>
-            <TextBox x:Name="TxtCountry" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="City:" 
+                                     VerticalAlignment="Center" Margin="0,0,5,5"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" 
+                                   Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"
+                                   Margin="0,0,0,5"/>
 
-            <Button Content="Choose" Click="BtnSelect_Click" Margin="0,0,0,5"/>
-            <Button Content="Show all" Click="BtnShowAll_Click" Margin="0,0,0,10"/>
-            <Button Content="Export to Excel" Click="BtnExportExcel_Click" Margin="0,0,0,5"/>
-            <Button Content="Export to XML" Click="BtnExportXml_Click" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Country:" 
+                                     VerticalAlignment="Center" Margin="0,0,5,5"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" 
+                                   Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                    </StackPanel>
+                </GroupBox>
 
+                <!-- Filter Actions -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" 
+                          HorizontalAlignment="Center" Margin="10,10,10,10">
+                    <Button Content="Apply Filters" 
+                          Command="{Binding SelectCommand}"
+                          Width="100" Height="30"
+                          ToolTip="Apply current filters"
+                          Margin="0,0,10,0"/>
 
-        </StackPanel>
+                    <Button Content="Clear All" 
+                          Command="{Binding ShowAllCommand}"
+                          Width="80" Height="30"
+                          ToolTip="Clear all filters and show all records"/>
+                </StackPanel>
 
+                <!-- Export Section -->
+                <GroupBox Grid.Row="4" Header="Export Data" Margin="10,5,10,10" Padding="5">
+                    <StackPanel>
+                        <Button Content="Export to Excel" 
+                              Command="{Binding ExportExcelCommand}"
+                              Height="30" Margin="0,0,0,5"
+                              ToolTip="Export filtered records to Excel"/>
+
+                        <Button Content="Export to XML" 
+                              Command="{Binding ExportXmlCommand}"
+                              Height="30"
+                              ToolTip="Export filtered records to XML"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Status/Info area (optional) -->
+                <Border Grid.Row="5" Margin="10" 
+                        Background="Transparent"
+                        VerticalAlignment="Bottom">
+                    <TextBlock Text="{Binding StatusMessage}"
+                             FontStyle="Italic" FontSize="11"
+                             Foreground="Gray" TextWrapping="Wrap"
+                             HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
