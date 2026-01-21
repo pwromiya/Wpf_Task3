@@ -62,31 +62,44 @@ public class DataService : IDataService
     /// </summary>
     public async Task AddRangeAsync(IEnumerable<Record> records, IProgress<int>? progress = null)
     {
-        // Wrap database operations in a background task to keep the UI responsive
-        await Task.Run(async () =>
+
+        using var db = await _dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+
+        // Disable automatic change detection to significantly speed up bulk inserts
+        db.ChangeTracker.AutoDetectChangesEnabled = false;
+
+        int batchSize = 500; // Define batch size to optimize memory and SQL transaction logs
+        int processed = 0;
+
+        var batch = new List<Record>(batchSize);
+
+        foreach (var record in records)
         {
-            using var db = await _dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+            batch.Add(record);
 
-            // Disable automatic change detection to significantly speed up bulk inserts
-            db.ChangeTracker.AutoDetectChangesEnabled = false;
-
-            var recordList = records.ToList();
-            int total = recordList.Count;
-            int batchSize = 500; // Define batch size to optimize memory and SQL transaction logs
-
-            for (int i = 0; i < total; i += batchSize)
+            if (batch.Count == batchSize)
             {
-                var batch = recordList.Skip(i).Take(batchSize).ToList();
-
                 await db.Records.AddRangeAsync(batch).ConfigureAwait(false);
                 await db.SaveChangesAsync().ConfigureAwait(false);
 
-                // Calculate and report real-time progress percentage
-                int percentage = (int)((double)(i + batch.Count) / total * 100);
-                progress?.Report(percentage);
+                processed += batch.Count;
+                progress?.Report(processed);
+
+                batch.Clear();
             }
-        }).ConfigureAwait(false);
+        }
+
+        // Save remaining records if batch is not empty
+        if (batch.Count > 0)
+        {
+            await db.Records.AddRangeAsync(batch).ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(false);
+
+            processed += batch.Count;
+            progress?.Report(processed);
+        }
     }
+
 
     /// <summary>
     /// Wipes all data from the Records table using the highly efficient TRUNCATE command.
